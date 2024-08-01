@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter as tk
 
 class SIGnemaApp(ctk.CTk):
     def __init__(self):
@@ -17,32 +18,37 @@ class SIGnemaApp(ctk.CTk):
         # Inicializa os componentes da tela de registro
         self.create_register_screen()
 
+        # Inicializa o rótulo de mensagem
+        self.message_label = ctk.CTkLabel(self, width=0, height=0, text="")
+        self.message_label.pack()
+
         # Mostra a tela de login inicialmente
         self.show_login()
 
+    def clear_message(self):
+        self.message_label.configure(text="", width=0, height=0)
+
     def show_login(self):
+        self.clear_message()
         self.register_frame.pack_forget()
         self.login_frame.pack(fill="both", expand=True)
 
     def show_register(self):
+        self.clear_message()
         self.login_frame.pack_forget()
         self.register_frame.pack(fill="both", expand=True)
 
     def create_login_screen(self):
-        login_label = ctk.CTkLabel(self.login_frame, text="SIGnema")
-        login_label.pack(pady=10)
+        ctk.CTkLabel(self.login_frame, text="SIGnema").pack(pady=10)
 
-        username_label = ctk.CTkLabel(self.login_frame, text="Login:")
-        username_label.pack(pady=5)
-        username_entry = ctk.CTkEntry(self.login_frame)
-        username_entry.pack(pady=5)
+        self.username_entry = ctk.CTkEntry(self.login_frame)
+        ctk.CTkLabel(self.login_frame, text="Login:").pack(pady=5)
+        self.username_entry.pack(pady=5)
 
-        password_label = ctk.CTkLabel(self.login_frame, text="Senha:")
-        password_label.pack(pady=5)
-        password_entry = ctk.CTkEntry(self.login_frame, show="*")
-        password_entry.pack(pady=5)
-        global p, u
-        p, u = password_entry.get(), username_entry.get()
+        self.password_entry = ctk.CTkEntry(self.login_frame, show="*")
+        ctk.CTkLabel(self.login_frame, text="Senha:").pack(pady=5)
+        self.password_entry.pack(pady=5)
+
         login_button = ctk.CTkButton(self.login_frame, text="Login", fg_color="#CA2E2E", hover_color="#CA3E3E", command=self.login_account)
         login_button.pack(pady=10)
 
@@ -50,50 +56,67 @@ class SIGnemaApp(ctk.CTk):
         register_button.pack(pady=10)
 
     def create_register_screen(self):
-        register_label = ctk.CTkLabel(self.register_frame, text="Tela de Registro")
-        register_label.pack(pady=10)
+        ctk.CTkLabel(self.register_frame, text="Tela de Registro").pack(pady=10)
 
-        new_username_label = ctk.CTkLabel(self.register_frame, text="Login:")
-        new_username_label.pack(pady=5)
-        new_username_entry = ctk.CTkEntry(self.register_frame)
-        new_username_entry.pack(pady=5)
+        self.new_username_entry = ctk.CTkEntry(self.register_frame)
+        ctk.CTkLabel(self.register_frame, text="Login:").pack(pady=5)
+        self.new_username_entry.pack(pady=5)
 
-        new_password_label = ctk.CTkLabel(self.register_frame, text="Senha:")
-        new_password_label.pack(pady=5)
-        new_password_entry = ctk.CTkEntry(self.register_frame, show="*")
-        new_password_entry.pack(pady=5)
+        self.new_password_entry = ctk.CTkEntry(self.register_frame, show="*")
+        ctk.CTkLabel(self.register_frame, text="Senha:").pack(pady=5)
+        self.new_password_entry.pack(pady=5)
 
-        confirm_password_label = ctk.CTkLabel(self.register_frame, text="Confirmar Senha:")
-        confirm_password_label.pack(pady=5)
-        confirm_password_entry = ctk.CTkEntry(self.register_frame, show="*")
-        confirm_password_entry.pack(pady=5)
+        self.confirm_password_entry = ctk.CTkEntry(self.register_frame, show="*")
+        ctk.CTkLabel(self.register_frame, text="Confirmar Senha:").pack(pady=5)
+        self.confirm_password_entry.pack(pady=5)
 
-        create_account_button = ctk.CTkButton(self.register_frame, text="Criar Conta", fg_color="#000000", hover_color="#000011")
+        # Criar e exibir o seletor de tipo de conta
+        self.typecommon = ctk.StringVar(value="Usuário")
+        self.typeaccount = ctk.CTkOptionMenu(self.register_frame, fg_color="black", button_color="red", button_hover_color="red", values=["Usuário", "Funcionário", "Gerente"], variable=self.typecommon)
+        self.typeaccount.pack(pady=10)
+
+        create_account_button = ctk.CTkButton(self.register_frame, text="Criar Conta", fg_color="#000000", hover_color="#000011", command=self.create_account)
         create_account_button.pack(pady=10)
 
         back_to_login_button = ctk.CTkButton(self.register_frame, text="Já possui conta?", command=self.show_login, fg_color="#000000", hover_color="#000022")
         back_to_login_button.pack(pady=10)
 
     def login_account(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
         with open("data/usuarios.txt", 'r') as file:
             lines = file.readlines()
-            for i in lines:
-                if u == (i.split(","))[1] and p == (i.split(","))[2]:
-                    print("ok", u, p)
-                else:
-                    print((i.split(","))[1], ((i.split(","))[2]), u, p)
+            for line in lines:
+                user_id, user, passw, _ = line.strip().split(",")
+                if username == user and password == passw:
+                    self.show_message("Login realizado com sucesso", "success")
+                    return
+        self.show_message("Usuário ou senha incorretos", "error")
 
     def create_account(self):
-        if new_username_entry.get() != null and new_password_entry.get() == confirm_password_entry.get():
+        new_username = self.new_username_entry.get()
+        new_password = self.new_password_entry.get()
+        confirm_password = self.confirm_password_entry.get()
+        account_type = self.typecommon.get()
+
+        if new_username and new_password and new_password == confirm_password:
             with open("data/usuarios.txt", 'r') as file:
                 lines = file.readlines()
-                id = len(lines) + 1
-            with open("data/usuarios.txt", 'w') as file:
-                file.write(id+","+new_username_entry.get()+","+new_password_entry.get()+","+ "aqui tipo" + "\n")
+                user_id = len(lines) + 1
+
+            with open("data/usuarios.txt", 'a') as file:
+                file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
+            self.show_message("Conta criada com sucesso", "success")
+            self.show_login()
         else:
-            self.textbox = ctk.CTkTextbox(master=self, width=400, corner_radius=0)
-            self.textbox.grid(row=0, column=0, sticky="nsew")
-            self.textbox.insert("0.0", "Erro - faltam dados!\n" * 50)
+            self.show_message("Erro - Faltam dados ou senhas não coincidem", "error")
+
+    def show_message(self, message, message_type):
+        if message_type == "success":
+            self.message_label.configure(text=message, width=10, height=25, fg_color="green")
+        else:
+            self.message_label.configure(text=message, width=10, height=25, fg_color="red")
 
 if __name__ == "__main__":
     app = SIGnemaApp()

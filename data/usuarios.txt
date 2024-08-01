@@ -1,1 +1,2 @@
-1,admin,admin,adm
+1,admin,admin,gerente
+2,ryan,1234,usuario
