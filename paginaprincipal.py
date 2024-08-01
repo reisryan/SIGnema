@@ -1,14 +1,18 @@
 from customtkinter import *
 from PIL import Image
+import os
 
 set_default_color_theme("green")
 
 class SIGnemaApp(CTk):
-    def __init__(self):
+    def __init__(self, username):
         super().__init__()
         
+        self.base_directory = os.path.dirname(os.path.abspath(__file__))
+        self.username = username  # Armazenar o nome do usuário
+
         self.geometry("800x600")
-        self.title("SIGnema App")
+        self.title("Olá, {self.username}")
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
 
         # Configurar a barra lateral (Hamburger menu)
@@ -129,7 +133,7 @@ class SIGnemaApp(CTk):
 
     def show_my_orders(self):
         self.clear_main_frame()
-        self.orders_label = CTkLabel(self.main_frame, text="Meus Pedidos", font=("Arial", 20))
+        self.orders_label = CTkLabel(self.main_frame, text="Meus Bilhetes", font=("Arial", 20))
         self.orders_label.pack(pady=20)
         # Adicione widgets relacionados aos pedidos
 
@@ -150,5 +154,6 @@ class SIGnemaApp(CTk):
             widget.destroy()
     
 if __name__ == "__main__":
-    app = SIGnemaApp()
+    username = sys.argv[1] if len(sys.argv) > 1 else "Usuário"
+    app = SIGnemaApp(username)
     app.mainloop()

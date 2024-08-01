@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import os
 
 class SIGnemaApp(ctk.CTk):
     def __init__(self):
@@ -91,6 +92,8 @@ class SIGnemaApp(ctk.CTk):
                 user_id, user, passw, _ = line.strip().split(",")
                 if username == user and password == passw:
                     self.show_message("Login realizado com sucesso", "success")
+                    app.after(2900, os.system("python paginaprincipal.py {user}"))
+                    app.after(3000, app.destroy())
                     return
         self.show_message("Usuário ou senha incorretos", "error")
 
