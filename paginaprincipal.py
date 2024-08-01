@@ -6,9 +6,10 @@ set_default_color_theme("green")
 class SIGnemaApp(CTk):
     def __init__(self):
         super().__init__()
-
+        
         self.geometry("800x600")
         self.title("SIGnema App")
+        self.base_directory = os.path.dirname(os.path.abspath(__file__))
 
         # Configurar a barra lateral (Hamburger menu)
         self.sidebar_frame = CTkFrame(self, width=200, height=100, corner_radius=0)
@@ -79,12 +80,52 @@ class SIGnemaApp(CTk):
         self.movies_label = CTkLabel(self.main_frame, text="Filmes", font=("Arial", 20))
         self.movies_label.pack(pady=20)
         # Adicione widgets relacionados à página de filmes
+        self.create_movie_posters()
 
     def show_cinemas(self):
         self.clear_main_frame()
         self.cinemas_label = CTkLabel(self.main_frame, text="Cinemas", font=("Arial", 20))
         self.cinemas_label.pack(pady=20)
         # Adicione widgets relacionados à página de cinemas
+        
+
+    def create_movie_posters(self):
+        # Lista de filmes e imagens (substitua pelos caminhos corretos das suas imagens)
+        movies = [
+            ("Filme 1", "images/filme1.png"),
+            ("Filme 2", "images/filme2.png"),
+            ("Filme 3", "images/filme3.png"),
+            ("Filme 4", "images/filme4.png"),
+            ("Filme 5", "images/filme5.png"),
+            ("Filme 6", "images/filme6.png"),
+            ("Filme 7", "images/filme7.png"),
+            ("Filme 8", "images/filme8.png"),
+            ("Filme 9", "images/filme9.png")
+        ]
+        poster_frame = CTkScrollableFrame(self.main_frame, width= 700, height = 400, orientation='horizontal')
+        poster_frame.pack()
+
+        for i, (name, image_file) in enumerate(movies):
+            frame = CTkFrame(poster_frame)
+            frame.pack(side="left", padx=10, pady=10)
+
+            image_path = os.path.join(self.base_directory, image_file)
+            img = Image.open(image_path)
+            photo = CTkImage(light_image=Image.open(image_path), dark_image=Image.open(image_path),size=(180,265))
+
+            button = CTkButton(frame, image=photo, command=lambda name=name: self.open_movie_page(name))
+            button.image = photo
+            button.pack()
+
+            label = CTkLabel(frame, text=name)
+            label.pack()
+
+
+    def open_movie_page(self, movie_name):
+        self.clear_main_frame()
+        movie_label = CTkLabel(self.main_frame, text=f"Página do {movie_name}", font=("Arial", 20))
+        movie_label.grid(row=0, column=0, pady=20)
+        # Adicione widgets específicos da página do filme
 
     def show_my_orders(self):
         self.clear_main_frame()
@@ -107,7 +148,7 @@ class SIGnemaApp(CTk):
     def clear_main_frame(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
+    
 if __name__ == "__main__":
     app = SIGnemaApp()
     app.mainloop()
