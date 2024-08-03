@@ -8,7 +8,7 @@ class SIGnemaApp(ctk.CTk):
         super().__init__()
         self.geometry("400x450")
         self.title("SIGnema")
-        ctk.set_appearance_mode("light")
+        ctk.set_appearance_mode("dark")
 
         # Diretório base do script
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -119,7 +119,7 @@ class SIGnemaApp(ctk.CTk):
                 if username == user and password == passw:
                     self.show_message("Login realizado com sucesso", "success")
                     # Use lambda para passar os parâmetros corretamente
-                    self.after(2900, lambda: self.abrir_pagina_principal(user, usertype))
+                    self.after(20, lambda: self.abrir_pagina_principal(user, usertype))
                     return
         self.show_message("Usuário ou senha incorretos", "error")
 

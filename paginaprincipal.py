@@ -41,7 +41,7 @@ class SIGnemaApp(CTk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        self.show_movies()
+        self.show_rooms()
 
     def create_sidebar_buttons(self):
         self.my_orders_button = CTkButton(self.sidebar_frame, text="Ver Meus Pedidos", command=self.show_my_orders)
@@ -84,18 +84,23 @@ class SIGnemaApp(CTk):
         pat_button.pack(pady=20)
 
     def create_movie_posters(self):
+        self.clear_main_frame()
+
+        self.movies_label = CTkLabel(self.main_frame, text="Filmes", font=("Arial", 20))
+        self.movies_label.pack(pady=20)
+        
         movies = [
-            ("Deadpool e Wolverine", "images/filme1.png"),
-            ("Meu Malvado Favorito 4", "images/filme2.png"),
-            ("Divertida Mente 2", "images/filme3.png"),
-            ("Twisters", "images/filme4.png"),
-            ("O Exorcismo", "images/filme5.png"),
-            ("Letícia", "images/filme6.png"),
+            ("Deadpool e Wolverine", "images/filme1.png", "08h00"),
+            ("Meu Malvado Favorito 4", "images/filme2.png", "11h00"),
+            ("Divertida Mente 2", "images/filme3.png", "14h00"),
+            ("Twisters", "images/filme4.png", "17h00"),
+            ("O Exorcismo", "images/filme5.png", "20h00"),
+            ("Letícia", "images/filme6.png", "23h00"),
         ]
         poster_frame = CTkScrollableFrame(self.main_frame, width=800, height=400, orientation='horizontal')
         poster_frame.pack()
 
-        for i, (name, image_file) in enumerate(movies):
+        for name, image_file, time in movies:
             frame = CTkFrame(poster_frame)
             frame.pack(side="left", padx=10, pady=10)
 
@@ -103,22 +108,23 @@ class SIGnemaApp(CTk):
             img = Image.open(image_path)
             photo = CTkImage(light_image=Image.open(image_path), dark_image=Image.open(image_path), size=(180, 265))
 
-            button = CTkButton(frame, image=photo, text='', command=lambda name=name: self.open_movie_page(name))
+            button = CTkButton(frame, image=photo, text='', command=lambda name=name, time=time: self.open_movie_page(name, time))
             button.image = photo
             button.pack()
 
-            label = CTkLabel(frame, text=name)
+            movie_info = f"{name} - \nHorário(s) Disponível(is): {time}"
+            label = CTkLabel(frame, text=movie_info)
             label.pack()
 
-    def open_movie_page(self, movie_name):
+    def open_movie_page(self, movie_name, time):
         self.clear_main_frame()
         movie_label = CTkLabel(self.main_frame, text=f"Página do {movie_name}", font=("Arial", 20))
         movie_label.grid(row=0, column=0, pady=20)
-        seat_matrix = self.load_seat_matrix(movie_name)
+        seat_matrix = self.load_seat_matrix(movie_name, time)
 
-        self.create_seat_interface(movie_name, seat_matrix)
-    
-    def create_seat_interface(self, movie_name, seat_matrix):
+        self.create_seat_interface(movie_name, time, seat_matrix)
+
+    def create_seat_interface(self, movie_name, time, seat_matrix):
         seat_frame = CTkScrollableFrame(self.main_frame, width=700, height=400, orientation='horizontal')
         seat_frame.grid(row=0, column=0, pady=20)
 
@@ -127,7 +133,7 @@ class SIGnemaApp(CTk):
             row_buttons = []
             for col in range(10):
                 button = CTkButton(seat_frame, text=f"{row * 10 + col + 1}",
-                                command=lambda r=row, c=col: self.toggle_seat(r, c, movie_name),
+                                command=lambda r=row, c=col: self.toggle_seat(r, c, movie_name, time),
                                 width=60, height=60, font=("Arial", 16))
                 button.grid(row=row, column=col, padx=5, pady=5)
                 if seat_matrix[row][col] == 0:
@@ -140,22 +146,22 @@ class SIGnemaApp(CTk):
                 row_buttons.append(button)
             self.seat_buttons.append(row_buttons)
 
-        save_button = CTkButton(self.main_frame, text="Salvar e Voltar", command=lambda: self.save_and_return(movie_name))
+        save_button = CTkButton(self.main_frame, text="Salvar e Voltar", command=lambda: self.save_and_return(movie_name, time))
         save_button.grid(row=2, column=0, pady=10)
 
-    def toggle_seat(self, row, col, movie_name):
+    def toggle_seat(self, row, col, movie_name, time):
         current_color = self.seat_buttons[row][col].cget("fg_color")
         new_color = "blue" if current_color == "green" else "green"
         self.seat_buttons[row][col].configure(fg_color=new_color)
 
         # Atualiza a matriz de assentos e salva no arquivo
-        seat_matrix = self.load_seat_matrix(movie_name)
+        seat_matrix = self.load_seat_matrix(movie_name, time)
         seat_matrix[row][col] = 2 if new_color == "blue" else 0
-        self.save_seat_matrix(movie_name, seat_matrix)
+        self.save_seat_matrix(movie_name, time, seat_matrix)
 
-    def save_and_return(self, movie_name):
+    def save_and_return(self, movie_name, time):
         seat_matrix = [[1 if button.cget("fg_color") == "blue" else (1 if button.cget("fg_color") == "gray" else 0) for button in row_buttons] for row_buttons in self.seat_buttons]
-        self.save_seat_matrix(movie_name, seat_matrix)
+        self.save_seat_matrix(movie_name, time, seat_matrix)
         self.show_movies()
 
     def clear_seats(self, movie_name):
@@ -164,14 +170,14 @@ class SIGnemaApp(CTk):
         self.save_seat_matrix(movie_name, seat_matrix)
         self.open_movie_page(movie_name)  # Dá Reload na interface
 
-    def save_seat_matrix(self, movie_name, seat_matrix):
-        file_path = os.path.join(self.base_directory, f"{movie_name}_seats.txt")
+    def save_seat_matrix(self, movie_name, time, seat_matrix):
+        file_path = os.path.join(self.base_directory, f"{movie_name}_{time}_seats.txt")
         with open(file_path, "w") as file:
             for row in seat_matrix:
                 file.write("".join(map(str, row)) + "\n")
 
-    def load_seat_matrix(self, movie_name):
-        file_path = os.path.join(self.base_directory, f"{movie_name}_seats.txt")
+    def load_seat_matrix(self, movie_name, time):
+        file_path = os.path.join(self.base_directory, f"{movie_name}_{time}_seats.txt")
         if not os.path.exists(file_path):
             return [[0 for _ in range(10)] for _ in range(5)]
         with open(file_path, "r") as file:
