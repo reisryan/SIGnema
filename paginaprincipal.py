@@ -201,16 +201,63 @@ class SIGnemaApp(CTk):
 
     def admin_properties(self):
         self.clear_main_frame()
-        self.users_list = CTkLabel(self.main_frame, text="Gerenciar Funcionarios", font=("Arial", 20))
-        self.users_list.pack(pady=20)
+        # Título da seção
+        title_label = CTkLabel(self.main_frame, text="Funcionários", font=("Arial", 24))
+        title_label.pack(pady=10)
+
+        # Frame para a lista de funcionários
         self.users_frame = CTkFrame(self.main_frame)
-        self.users_frame.pack(pady=10)
+        self.users_frame.pack(pady=10, padx=15, fill="both", expand=True)
+
+        # Carregar e exibir a lista de funcionários
         users = self.read_users_from_file(self.usuarios_file)
         for user_id, user, passw, usertype in users:
             if usertype == 'Funcionario':
                 user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
-                user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12))
+                user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12), fg_color="#08253D")
                 user_label.pack(pady=5)
+
+        # Seção para gerenciar funcionários
+        manage_frame = CTkFrame(self.main_frame)
+        manage_frame.pack(pady=20, padx=16, fill="x")
+
+        manage_title = CTkLabel(manage_frame, text="Gerenciar Funcionários", font=("Arial", 20))
+        manage_title.pack(pady=10)
+
+        demitir_label = CTkLabel(manage_frame, text="ID:")
+        demitir_label.pack(pady=5)
+
+        self.demitir_entry = CTkEntry(manage_frame)
+        self.demitir_entry.pack(pady=5, padx=10)
+
+        demitir_button = CTkButton(manage_frame, text="Demitir", command=self.demitefuncionario)
+        demitir_button.pack(pady=10)
+
+    def demitefuncionario(self):
+        demitido_id = self.demitir_entry.get()
+    
+        if not demitido_id:
+            ctk.CTkMessagebox.show_info("Erro", "ID do funcionário não fornecido.")
+            return
+    
+        updated_lines = []
+        user_found = False
+
+        # Lê todas as linhas do arquivo
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+
+        # Atualiza a linha correspondente
+        with open(self.usuarios_file, 'w') as file:
+            for line in lines:
+                user_id, user, pw, utype = line.strip().split(',')
+                if user_id == demitido_id:
+                    utype = 'Usuario'
+                    user_found = True
+                updated_line = f"{user_id},{user},{pw},{utype}\n"
+                file.write(updated_line)
+    
+        
 
     def read_users_from_file(self, file_path):
         users = []

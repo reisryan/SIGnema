@@ -6,7 +6,7 @@ import os
 class SIGnemaApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("400x450")
+        self.geometry("400x650")
         self.title("SIGnema")
         ctk.set_appearance_mode("dark")
 
