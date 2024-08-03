@@ -21,7 +21,7 @@ class SIGnemaApp(CTk):
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
 
         self.sidebar_toggle_button = CTkButton(self, text="☰", width=40, height=40, command=self.toggle_sidebar)
-        self.sidebar_toggle_button.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
+        self.sidebar_toggle_button.grid(row=0, column=0, sticky="nw", padx=10, pady=8)
 
         # Botões da barra lateral
         self.create_sidebar_buttons()
@@ -191,7 +191,8 @@ class SIGnemaApp(CTk):
         self.clear_main_frame()
         self.password_label = CTkLabel(self.main_frame, text="Alterar Senha", font=("Arial", 20))
         self.password_label.pack(pady=20)
-        
+
+
     def admin_properties(self):
         self.clear_main_frame()
         self.users_list = CTkLabel(self.main_frame, text="Gerenciar Funcionarios", font=("Arial", 20))
