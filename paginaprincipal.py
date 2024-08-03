@@ -1,5 +1,7 @@
 from customtkinter import *
 from PIL import Image
+import sys
+import os
 
 set_default_color_theme("green")
 
@@ -50,7 +52,7 @@ class SIGnemaApp(CTk):
         self.change_password_button = CTkButton(self.sidebar_frame, text="Alterar Senha", command=self.change_password)
         self.change_password_button.place(x=0,y=120)
         
-        if self.usertype == "gerente":
+        if self.usertype == "Gerente":
             self.admin_users_button = CTkButton(self.sidebar_frame, text="Gerenciar Funcionários", command=self.admin_properties)
             self.admin_users_button.place(x=0,y=150)
 
@@ -192,15 +194,16 @@ class SIGnemaApp(CTk):
         
     def admin_properties(self):
         self.clear_main_frame()
-        self.users_list = CTkLabel(self.main_frame, text="Gerenciar Usuários", font=("Arial", 20))
+        self.users_list = CTkLabel(self.main_frame, text="Gerenciar Funcionarios", font=("Arial", 20))
         self.users_list.pack(pady=20)
         self.users_frame = CTkFrame(self.main_frame)
         self.users_frame.pack(pady=10)
         users = self.read_users_from_file("data/usuarios.txt")
         for user_id, user, passw, usertype in users:
-            user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
-            user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12))
-            user_label.pack(pady=5)
+            if usertype == 'Funcionario':
+                user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
+                user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12))
+                user_label.pack(pady=5)
 
     def read_users_from_file(self, file_path):
         users = []

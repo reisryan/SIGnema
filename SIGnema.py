@@ -73,8 +73,8 @@ class SIGnemaApp(ctk.CTk):
         self.confirm_password_entry.pack(pady=5)
 
         # Criar e exibir o seletor de tipo de conta
-        self.typecommon = ctk.StringVar(value="Usuário")
-        self.typeaccount = ctk.CTkOptionMenu(self.register_frame, fg_color="black", button_color="red", button_hover_color="red", values=["Usuário", "Funcionário", "Gerente"], variable=self.typecommon)
+        self.typecommon = ctk.StringVar(value="Usuario")
+        self.typeaccount = ctk.CTkOptionMenu(self.register_frame, fg_color="black", button_color="red", button_hover_color="red", values=["Usuario", "Funcionario", "Gerente"], variable=self.typecommon)
         self.typeaccount.pack(pady=10)
 
         create_account_button = ctk.CTkButton(self.register_frame, text="Criar Conta", fg_color="#000000", hover_color="#000011", command=self.create_account)

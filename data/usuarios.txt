@@ -1,3 +1,3 @@
-1,admin,admin,gerente
-2,ryan,1234,usuario
-3,func,func,Funcionário
+1,admin,admin,Gerente
+2,ryan,1234,Usuario
+3,func,func,Funcionario
