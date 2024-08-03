@@ -15,6 +15,7 @@ class SIGnemaApp(CTk):
         self.geometry("1000x600")
         self.title("SIGnema App")
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
+        self.usuarios_file = os.path.join(self.base_directory, "data", "usuarios.txt")
 
         # Barra lateral
         self.sidebar_frame = CTkFrame(self, width=150, height=100, corner_radius=0)
@@ -44,17 +45,17 @@ class SIGnemaApp(CTk):
 
     def create_sidebar_buttons(self):
         self.my_orders_button = CTkButton(self.sidebar_frame, text="Ver Meus Pedidos", command=self.show_my_orders)
-        self.my_orders_button.place(x=0,y=60)
+        self.my_orders_button.place(x=0, y=60)
 
         self.my_data_button = CTkButton(self.sidebar_frame, text="Meu Perfil", command=self.show_my_data)
-        self.my_data_button.place(x=0,y=90)
+        self.my_data_button.place(x=0, y=90)
 
         self.change_password_button = CTkButton(self.sidebar_frame, text="Alterar Senha", command=self.change_password)
-        self.change_password_button.place(x=0,y=120)
+        self.change_password_button.place(x=0, y=120)
         
         if self.usertype == "Gerente":
             self.admin_users_button = CTkButton(self.sidebar_frame, text="Gerenciar Funcionários", command=self.admin_properties)
-            self.admin_users_button.place(x=0,y=150)
+            self.admin_users_button.place(x=0, y=150)
 
     def create_bottom_bar(self):
         self.movies_button = CTkButton(self.bottom_bar_frame, text="Filmes", command=self.show_movies)
@@ -91,7 +92,7 @@ class SIGnemaApp(CTk):
             ("O Exorcismo", "images/filme5.png"),
             ("Letícia", "images/filme6.png"),
         ]
-        poster_frame = CTkScrollableFrame(self.main_frame, width= 800, height = 400, orientation='horizontal')
+        poster_frame = CTkScrollableFrame(self.main_frame, width=800, height=400, orientation='horizontal')
         poster_frame.pack()
 
         for i, (name, image_file) in enumerate(movies):
@@ -100,7 +101,7 @@ class SIGnemaApp(CTk):
 
             image_path = os.path.join(self.base_directory, image_file)
             img = Image.open(image_path)
-            photo = CTkImage(light_image=Image.open(image_path), dark_image=Image.open(image_path),size=(180,265))
+            photo = CTkImage(light_image=Image.open(image_path), dark_image=Image.open(image_path), size=(180, 265))
 
             button = CTkButton(frame, image=photo, text='', command=lambda name=name: self.open_movie_page(name))
             button.image = photo
@@ -108,7 +109,6 @@ class SIGnemaApp(CTk):
 
             label = CTkLabel(frame, text=name)
             label.pack()
-
 
     def open_movie_page(self, movie_name):
         self.clear_main_frame()
@@ -119,7 +119,7 @@ class SIGnemaApp(CTk):
         self.create_seat_interface(movie_name, seat_matrix)
     
     def create_seat_interface(self, movie_name, seat_matrix):
-        seat_frame = CTkScrollableFrame(self.main_frame, width= 700, height = 400, orientation='horizontal')
+        seat_frame = CTkScrollableFrame(self.main_frame, width=700, height=400, orientation='horizontal')
         seat_frame.grid(row=0, column=0, pady=20)
 
         self.seat_buttons = []
@@ -199,7 +199,7 @@ class SIGnemaApp(CTk):
         self.users_list.pack(pady=20)
         self.users_frame = CTkFrame(self.main_frame)
         self.users_frame.pack(pady=10)
-        users = self.read_users_from_file("data/usuarios.txt")
+        users = self.read_users_from_file(self.usuarios_file)
         for user_id, user, passw, usertype in users:
             if usertype == 'Funcionario':
                 user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
