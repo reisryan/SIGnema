@@ -53,9 +53,12 @@ class SIGnemaApp(CTk):
         self.change_password_button = CTkButton(self.sidebar_frame, text="Alterar Senha", command=self.change_password)
         self.change_password_button.place(x=0, y=120)
         
+        if self.usertype == "Funcionario" or self.usertype == "Gerente":
+            self.funcionario_button = CTkButton(self.sidebar_frame, text="Adicionar Filme", command=self.funcionario_properties)
+            self.funcionario_button.place(x=0, y=150)
         if self.usertype == "Gerente":
             self.admin_users_button = CTkButton(self.sidebar_frame, text="Gerenciar Funcionários", command=self.admin_properties)
-            self.admin_users_button.place(x=0, y=150)
+            self.admin_users_button.place(x=0, y=180)
 
     def create_bottom_bar(self):
         self.movies_button = CTkButton(self.bottom_bar_frame, text="Filmes", command=self.show_movies)
@@ -197,7 +200,13 @@ class SIGnemaApp(CTk):
         self.clear_main_frame()
         self.password_label = CTkLabel(self.main_frame, text="Alterar Senha", font=("Arial", 20))
         self.password_label.pack(pady=20)
+        self.newpasswordl = CTkLabel(self.main_frame, text="Nova Senha:").pack(pady=10)
+        self.newpw = CTkEntry(self.main_frame)
+        self.newpw.pack(pady=10)
+        self.newpasswordb = CTkButton(self.main_frame, width=4, height=8, text="Alterar", command=self.changepassword).pack(pady=10)
 
+    def funcionario_properties(self):
+        self.clear_main_frame()
 
     def admin_properties(self):
         self.clear_main_frame()
@@ -250,14 +259,39 @@ class SIGnemaApp(CTk):
         # Atualiza a linha correspondente
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
-                user_id, user, pw, utype = line.strip().split(',')
+                user_id, username, pw, utype = line.strip().split(',')
                 if user_id == demitido_id:
                     utype = 'Usuario'
+                    user_found = True
+                updated_line = f"{user_id},{username},{pw},{utype}\n"
+                file.write(updated_line)
+    
+    def changepassword(self):
+        newpassword = self.newpw.get()
+  
+        if not newpassword:
+            ctk.CTkMessagebox.show_info("Erro", "ID do funcionário não fornecido.")
+            return
+    
+        updated_lines = []
+        user_found = False
+
+        # Lê todas as linhas do arquivo
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+
+        # Atualiza a linha correspondente
+        with open(self.usuarios_file, 'w') as file:
+            for line in lines:
+                user_id, username, pw, utype = line.strip().split(',')
+                if user == username:
+                    pw = newpassword
                     user_found = True
                 updated_line = f"{user_id},{user},{pw},{utype}\n"
                 file.write(updated_line)
     
         
+
 
     def read_users_from_file(self, file_path):
         users = []
