@@ -10,7 +10,18 @@ class SIGnemaApp(ctk.CTk):
         self.title("SIGnema")
         ctk.set_appearance_mode("light")
 
-        # Cria os frames
+        # Diretório base do script
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.data_dir = os.path.join(self.base_dir, "data")
+        self.usuarios_file = os.path.join(self.data_dir, "usuarios.txt")
+        self.pagina_principal_script = os.path.join(self.base_dir, "paginaprincipal.py")
+
+        if not os.path.exists(self.usuarios_file):
+            os.makedirs(self.data_dir, exist_ok=True)
+            with open(self.usuarios_file, 'w') as file:
+                pass
+
+        
         self.login_frame = ctk.CTkFrame(self)
         self.register_frame = ctk.CTkFrame(self)
 
@@ -87,7 +98,7 @@ class SIGnemaApp(ctk.CTk):
         username = self.username_entry.get()
         password = self.password_entry.get()
 
-        with open("data/usuarios.txt", 'r') as file:
+        with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
             for line in lines:
                 user_id, user, passw, usertype = line.strip().split(",")
@@ -101,7 +112,7 @@ class SIGnemaApp(ctk.CTk):
     def abrir_pagina_principal(self, user, usertype):
         self.destroy()
         # Use subprocess.run para executar o comando com parâmetros
-        subprocess.run(["python", "paginaprincipal.py", user, usertype])
+        subprocess.run(["python", self.pagina_principal_script, user, usertype])
 
     def create_account(self):
         new_username = self.new_username_entry.get()
@@ -110,11 +121,11 @@ class SIGnemaApp(ctk.CTk):
         account_type = self.typecommon.get()
 
         if new_username and new_password and new_password == confirm_password:
-            with open("data/usuarios.txt", 'r') as file:
+            with open(self.usuarios_file, 'r') as file:
                 lines = file.readlines()
                 user_id = len(lines) + 1
 
-            with open("data/usuarios.txt", 'a') as file:
+            with open(self.usuarios_file, 'a') as file:
                 file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
             self.show_message("Conta criada com sucesso", "success")
             self.show_login()
