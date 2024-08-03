@@ -6,7 +6,7 @@ import os
 class SIGnemaApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("400x400")
+        self.geometry("400x450")
         self.title("SIGnema")
         ctk.set_appearance_mode("light")
 
@@ -85,14 +85,28 @@ class SIGnemaApp(ctk.CTk):
 
         # Criar e exibir o seletor de tipo de conta
         self.typecommon = ctk.StringVar(value="Usuario")
+        self.typecommon.trace("w", self.check_account_type)
         self.typeaccount = ctk.CTkOptionMenu(self.register_frame, fg_color="black", button_color="red", button_hover_color="red", values=["Usuario", "Funcionario", "Gerente"], variable=self.typecommon)
         self.typeaccount.pack(pady=10)
+
+        # Label e Entry da Senha Mestre (criados uma vez, mas inicialmente escondidos)
+        self.senhamestre_label = ctk.CTkLabel(self.register_frame, text="Senha Mestre:")
+        self.senhamestre_entry = ctk.CTkEntry(self.register_frame, show="*")
 
         create_account_button = ctk.CTkButton(self.register_frame, text="Criar Conta", fg_color="#000000", hover_color="#000011", command=self.create_account)
         create_account_button.pack(pady=10)
 
         back_to_login_button = ctk.CTkButton(self.register_frame, text="Já possui conta?", command=self.show_login, fg_color="#000000", hover_color="#000022")
         back_to_login_button.pack(pady=10)
+
+    def check_account_type(self, *args):
+        account_type = self.typecommon.get()
+        if account_type in ["Funcionario", "Gerente"]:
+            self.senhamestre_label.pack(pady=5)
+            self.senhamestre_entry.pack(pady=5)
+        else:
+            self.senhamestre_label.pack_forget()
+            self.senhamestre_entry.pack_forget()
 
     def login_account(self):
         username = self.username_entry.get()
@@ -119,24 +133,33 @@ class SIGnemaApp(ctk.CTk):
         new_password = self.new_password_entry.get()
         confirm_password = self.confirm_password_entry.get()
         account_type = self.typecommon.get()
+        sm = self.senhamestre_entry.get()
 
         if new_username and new_password and new_password == confirm_password:
             with open(self.usuarios_file, 'r') as file:
                 lines = file.readlines()
                 user_id = len(lines) + 1
+            if account_type == 'Gerente' or account_type == 'Funcionario':
+                if sm == '123SI123':
+                    with open(self.usuarios_file, 'a') as file:
+                        file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
+                    self.show_message("Conta criada com sucesso", "success")
+                else:
+                    self.show_message("S.M. incorreta!", "error")
+            else:
+                with open(self.usuarios_file, 'a') as file:
+                    file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
+                self.show_message("Conta criada com sucesso", "success")
 
-            with open(self.usuarios_file, 'a') as file:
-                file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
-            self.show_message("Conta criada com sucesso", "success")
             self.show_login()
         else:
             self.show_message("Erro - Faltam dados ou senhas não coincidem", "error")
 
     def show_message(self, message, message_type):
         if message_type == "success":
-            self.message_label.configure(text=message, width=10, height=25, fg_color="green")
+            self.message_label.configure(text=message, width=10, height=50, fg_color="green")
         else:
-            self.message_label.configure(text=message, width=10, height=25, fg_color="red")
+            self.message_label.configure(text=message, width=10, height=50, fg_color="red")
 
 if __name__ == "__main__":
     app = SIGnemaApp()
