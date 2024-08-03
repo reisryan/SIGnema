@@ -1,4 +1,5 @@
 from customtkinter import *
+import customtkinter as ctk
 from PIL import Image
 import sys
 import os
@@ -195,6 +196,13 @@ class SIGnemaApp(CTk):
         self.clear_main_frame()
         self.data_label = CTkLabel(self.main_frame, text="Meus Dados", font=("Arial", 20))
         self.data_label.pack(pady=20)
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+            for i in lines:
+                user_id, username, password, typeaccount = i.strip().split(',')
+                if username == self.user:
+                    break
+        self.usrname = CTkLabel(self.main_frame, text=f"Olá, {username}! Seu id de usuário é ({user_id}) e seu tipo de conta é: {typeaccount}.", font=("Arial", 25)).pack(padx=30, pady=70)
 
     def change_password(self):
         self.clear_main_frame()
@@ -205,8 +213,84 @@ class SIGnemaApp(CTk):
         self.newpw.pack(pady=10)
         self.newpasswordb = CTkButton(self.main_frame, width=4, height=8, text="Alterar", command=self.changepassword).pack(pady=10)
 
+    def generate_movie_id(self):
+        try:
+            if not os.path.exists('data'):
+                os.makedirs('data')
+            if not os.path.exists('data/filmes.txt'):
+                with open('data/filmes.txt', 'w') as file:
+                    pass
+            with open('data/filmes.txt', 'r') as file:
+                lines = file.readlines()
+                if not lines:
+                    return 1
+                else:
+                    last_line = lines[-1]
+                    last_id = int(last_line.split(',')[0])
+                    return last_id + 1
+        except Exception as e:
+            print(f"Erro ao gerar ID do filme: {e}")
+            return None
+
+    def save_movie_data(self, movie_id, movie_name, image_path, movie_time):
+        try:
+            with open('data/filmes.txt', 'a') as file:
+                file.write(f"{movie_id},{movie_name},{image_path},{movie_time}\n")
+            print("Dados do filme salvos com sucesso!")
+        except Exception as e:
+            print(f"Erro ao salvar dados do filme: {e}")
+
+    def add_image(self):
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Image files", "*.png")]
+        )
+        if file_path:
+            try:
+                if not os.path.exists('images'):
+                    os.makedirs('images')
+                file_name = os.path.basename(file_path)
+                dest_path = os.path.join('images', file_name)
+                with open(file_path, 'rb') as src_file:
+                    with open(dest_path, 'wb') as dest_file:
+                        dest_file.write(src_file.read())
+                self.image_path = dest_path
+                print("Imagem adicionada com sucesso!")
+            except Exception as e:
+                print(f"Erro ao adicionar imagem: {e}")
+        else:
+            print("Nenhuma imagem foi selecionada.")
+
+    def submit_movie(self):
+        movie_name = self.nome_filme_entry.get()
+        movie_time = self.horario_entry.get()
+        movie_id = self.generate_movie_id()
+        
+        if movie_name and movie_time and hasattr(self, 'image_path') and movie_id:
+            self.save_movie_data(movie_id, movie_name, self.image_path, movie_time)
+        else:
+            print("Todos os campos devem ser preenchidos e uma imagem deve ser selecionada.")
+
     def funcionario_properties(self):
         self.clear_main_frame()
+
+        self.funcionario_frame = ctk.CTkFrame(self.main_frame)
+        self.funcionario_frame.pack(pady=20, padx=20, fill="both", expand=True)
+
+        ctk.CTkLabel(self.funcionario_frame, text="Nome do Filme:").pack(pady=5)
+        self.nome_filme_entry = ctk.CTkEntry(self.funcionario_frame)
+        self.nome_filme_entry.pack(pady=5, padx=10)
+
+        ctk.CTkLabel(self.funcionario_frame, text="Imagem:").pack(pady=5)
+        add_image_button = ctk.CTkButton(self.funcionario_frame, text="Adicionar Imagem", command=self.add_image)
+        add_image_button.pack(pady=5, padx=10)
+
+        ctk.CTkLabel(self.funcionario_frame, text="Horário:").pack(pady=5)
+        self.horario_entry = ctk.CTkEntry(self.funcionario_frame)
+        self.horario_entry.pack(pady=5, padx=10)
+        self.horario_entry.insert(0, "00:00")
+
+        submit_button = ctk.CTkButton(self.funcionario_frame, text="Salvar Filme", command=self.submit_movie)
+        submit_button.pack(pady=20)
 
     def admin_properties(self):
         self.clear_main_frame()

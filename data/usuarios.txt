@@ -1,3 +1,4 @@
-1,admin,123a,Gerente
+1,admin,admin,Gerente
 2,admin,1234,Usuario
 3,admin,func,Usuario
+4,func2,123,Funcionario
