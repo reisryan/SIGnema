@@ -1,3 +1,4 @@
+import subprocess
 import customtkinter as ctk
 import tkinter as tk
 import os
@@ -89,13 +90,18 @@ class SIGnemaApp(ctk.CTk):
         with open("data/usuarios.txt", 'r') as file:
             lines = file.readlines()
             for line in lines:
-                user_id, user, passw, _ = line.strip().split(",")
+                user_id, user, passw, usertype = line.strip().split(",")
                 if username == user and password == passw:
                     self.show_message("Login realizado com sucesso", "success")
-                    app.after(2900, os.system("python paginaprincipal.py {user}"))
-                    app.after(3000, app.destroy())
+                    # Use lambda para passar os parâmetros corretamente
+                    self.after(2900, lambda: self.abrir_pagina_principal(user, usertype))
                     return
         self.show_message("Usuário ou senha incorretos", "error")
+
+    def abrir_pagina_principal(self, user, usertype):
+        self.destroy()
+        # Use subprocess.run para executar o comando com parâmetros
+        subprocess.run(["python", "paginaprincipal.py", user, usertype])
 
     def create_account(self):
         new_username = self.new_username_entry.get()

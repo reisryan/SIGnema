@@ -4,8 +4,11 @@ from PIL import Image
 set_default_color_theme("green")
 
 class SIGnemaApp(CTk):
-    def __init__(self):
+    def __init__(self, user, usertype):
         super().__init__()
+        
+        self.user = user
+        self.usertype = usertype
         
         self.geometry("1000x600")
         self.title("SIGnema App")
@@ -46,6 +49,10 @@ class SIGnemaApp(CTk):
 
         self.change_password_button = CTkButton(self.sidebar_frame, text="Alterar Senha", command=self.change_password)
         self.change_password_button.place(x=0,y=120)
+        
+        if self.usertype == "gerente":
+            self.admin_users_button = CTkButton(self.sidebar_frame, text="Gerenciar Funcionários", command=self.admin_properties)
+            self.admin_users_button.place(x=0,y=150)
 
     def create_bottom_bar(self):
         self.movies_button = CTkButton(self.bottom_bar_frame, text="Filmes", command=self.show_movies)
@@ -182,11 +189,43 @@ class SIGnemaApp(CTk):
         self.clear_main_frame()
         self.password_label = CTkLabel(self.main_frame, text="Alterar Senha", font=("Arial", 20))
         self.password_label.pack(pady=20)
+        
+    def admin_properties(self):
+        self.clear_main_frame()
+        self.users_list = CTkLabel(self.main_frame, text="Gerenciar Usuários", font=("Arial", 20))
+        self.users_list.pack(pady=20)
+        self.users_frame = CTkFrame(self.main_frame)
+        self.users_frame.pack(pady=10)
+        users = self.read_users_from_file("data/usuarios.txt")
+        for user_id, user, passw, usertype in users:
+            user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
+            user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12))
+            user_label.pack(pady=5)
+
+    def read_users_from_file(self, file_path):
+        users = []
+        try:
+            with open(file_path, 'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    user_data = line.strip().split(",")
+                    if len(user_data) == 4:  # Espera-se que cada linha tenha 4 partes
+                        users.append(user_data)
+        except FileNotFoundError:
+            print(f"Arquivo {file_path} não encontrado.")
+        return users
 
     def clear_main_frame(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
     
 if __name__ == "__main__":
-    app = SIGnemaApp()
+    if len(sys.argv) != 3:
+        print("Usage: python paginaprincipal.py <user> <usertype>")
+        sys.exit(1)
+
+    user = sys.argv[1]
+    usertype = sys.argv[2]
+
+    app = SIGnemaApp(user, usertype)
     app.mainloop()
