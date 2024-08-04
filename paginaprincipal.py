@@ -1,5 +1,7 @@
 from customtkinter import *
 import customtkinter as ctk
+import tkinter as tk
+from tkinter import messagebox
 from PIL import Image
 import sys
 import os
@@ -12,33 +14,34 @@ class SIGnemaApp(CTk):
         
         self.user = user
         self.usertype = usertype
+        self.orders = []
         
         self.geometry("1000x600")
         self.title("SIGnema App")
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
         self.usuarios_file = os.path.join(self.base_directory, "data", "usuarios.txt")
 
-        # Barra lateral
+        # barra lateral
         self.sidebar_frame = CTkFrame(self, width=150, height=100, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, sticky="ns")
 
         self.sidebar_toggle_button = CTkButton(self, text="☰", width=40, height=40, command=self.toggle_sidebar)
         self.sidebar_toggle_button.grid(row=0, column=0, sticky="nw", padx=10, pady=8)
 
-        # Botões da barra lateral
+        # botões da barra lateral
         self.create_sidebar_buttons()
 
-        # Área principal
+        # area principal
         self.main_frame = CTkFrame(self)
         self.main_frame.grid(row=0, column=1, sticky="nsew")
 
-        # Barra inferior
+        # barra inferior
         self.bottom_bar_frame = CTkFrame(self, height=40, width=800, corner_radius=0)
-        self.bottom_bar_frame.place(x=0, y=560)  # Posição e o tamanho da barra inferior
+        self.bottom_bar_frame.place(x=0, y=560)
 
         self.create_bottom_bar()
 
-        # Layout responsivo
+        # layout responsivo
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
@@ -137,8 +140,8 @@ class SIGnemaApp(CTk):
             row_buttons = []
             for col in range(10):
                 button = CTkButton(seat_frame, text=f"{row * 10 + col + 1}",
-                                command=lambda r=row, c=col: self.toggle_seat(r, c, movie_name, time),
-                                width=60, height=60, font=("Arial", 16))
+                                    command=lambda r=row, c=col: self.toggle_seat(r, c, movie_name, time),
+                                    width=60, height=60, font=("Arial", 16))
                 button.grid(row=row, column=col, padx=5, pady=5)
                 if seat_matrix[row][col] == 0:
                     button.configure(fg_color="green")
@@ -152,27 +155,94 @@ class SIGnemaApp(CTk):
 
         save_button = CTkButton(self.main_frame, text="Salvar e Voltar", command=lambda: self.save_and_return(movie_name, time))
         save_button.grid(row=2, column=0, pady=10)
+        return_button = CTkButton(self.main_frame, text="Voltar", command=self.show_movies)
+        return_button.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+
+    def save_order(self, movie_name, time, seats):
+        order = {
+            "Cliente": self.user,
+            "Filme": movie_name,
+            "Sala": "PAT AT 085",
+            "Horário": time,
+            "Assentos": seats
+        }
+        self.orders.append(order)
+        self.save_orders_to_file(order)
+
+    def save_orders_to_file(self, order):
+        pedidos_dir = os.path.join(self.base_directory, 'pedidos')
+        if not os.path.exists(pedidos_dir):
+            os.makedirs(pedidos_dir)
+
+        file_path = os.path.join(pedidos_dir, f'{self.user}_pedidos.txt')
+        with open(file_path, 'a') as file:
+            file.write(f"{order['Cliente']}!{order['Filme']}!{order['Sala']}!{order['Horário']}!{','.join(order['Assentos'])}\n")
 
     def toggle_seat(self, row, col, movie_name, time):
         current_color = self.seat_buttons[row][col].cget("fg_color")
+        
+        # Não permite selecionar assentos cinzas (ocupados)
+        if current_color == "gray":
+            return
+
         new_color = "blue" if current_color == "green" else "green"
         self.seat_buttons[row][col].configure(fg_color=new_color)
 
-        # Atualiza a matriz de assentos e salva no arquivo
+        # Atualizar e salvar a matriz no arquivo
         seat_matrix = self.load_seat_matrix(movie_name, time)
         seat_matrix[row][col] = 2 if new_color == "blue" else 0
         self.save_seat_matrix(movie_name, time, seat_matrix)
 
     def save_and_return(self, movie_name, time):
-        seat_matrix = [[1 if button.cget("fg_color") == "blue" else (1 if button.cget("fg_color") == "gray" else 0) for button in row_buttons] for row_buttons in self.seat_buttons]
+        selected_seats = [f"{row * 10 + col + 1}" for row, row_buttons in enumerate(self.seat_buttons) for col, button in enumerate(row_buttons) if button.cget("fg_color") == "blue"]
+        
+        if not selected_seats:
+            messagebox.showinfo("Aviso", "Nenhum assento selecionado para salvar.")
+            return
+        
+        self.save_order(movie_name, time, selected_seats)
+        
+        # Atualizar matriz de assentos para marcar como ocupados (cinza)
+        seat_matrix = self.load_seat_matrix(movie_name, time)
+        for row in range(5):
+            for col in range(10):
+                if self.seat_buttons[row][col].cget("fg_color") == "blue":
+                    seat_matrix[row][col] = 1  # Marcar como ocupado
+
         self.save_seat_matrix(movie_name, time, seat_matrix)
         self.show_movies()
 
+    def show_my_orders(self):
+        self.clear_main_frame()
+
+        self.orders_label = CTkLabel(self.main_frame, text="Meus Pedidos", font=("Arial", 20))
+        self.orders_label.pack(pady=20)
+
+        self.scrollable_frame = CTkScrollableFrame(self.main_frame, width=800, height=500, orientation='vertical')
+        self.scrollable_frame.pack(pady=20, fill="both", expand=True)
+
+        self.inner_frame = CTkFrame(self.scrollable_frame, width=780)
+        self.inner_frame.pack(pady=20, padx=20, fill="both", expand=True)
+
+        pedidos_dir = os.path.join(self.base_directory, 'pedidos')
+        file_path = os.path.join(pedidos_dir, f'{self.user}_pedidos.txt')
+
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                for line in file:
+                    cliente, filme, sala, horario, assentos = line.strip().split('!')
+                    if cliente == self.user:
+                        order_text = f"Filme: {filme}\nSala: {sala}\nHorário: {horario}\nAssentos: {assentos}\n"
+                        order_label = CTkLabel(self.inner_frame, text=order_text, font=("Arial", 16))
+                        order_label.pack(pady=10, anchor="center")
+        else:
+            no_orders_label = CTkLabel(self.inner_frame, text="Nenhum pedido encontrado.", font=("Arial", 16))
+            no_orders_label.pack(pady=10, anchor="center")
+
     def clear_seats(self, movie_name):
-        # Redefine a matriz de assentos para todos os zeros
         seat_matrix = [[0 for _ in range(10)] for _ in range(5)]
         self.save_seat_matrix(movie_name, seat_matrix)
-        self.open_movie_page(movie_name)  # Dá Reload na interface
+        self.open_movie_page(movie_name)
 
     def save_seat_matrix(self, movie_name, time, seat_matrix):
         file_path = os.path.join(self.base_directory, f"{movie_name}_{time}_seats.txt")
@@ -186,11 +256,6 @@ class SIGnemaApp(CTk):
             return [[0 for _ in range(10)] for _ in range(5)]
         with open(file_path, "r") as file:
             return [list(map(int, line.strip())) for line in file]
-
-    def show_my_orders(self):
-        self.clear_main_frame()
-        self.orders_label = CTkLabel(self.main_frame, text="Meus Pedidos", font=("Arial", 20))
-        self.orders_label.pack(pady=20)
 
     def show_my_data(self):
         self.clear_main_frame()
@@ -294,15 +359,12 @@ class SIGnemaApp(CTk):
 
     def admin_properties(self):
         self.clear_main_frame()
-        # Título da seção
         title_label = CTkLabel(self.main_frame, text="Funcionários", font=("Arial", 24))
         title_label.pack(pady=10)
 
-        # Frame para a lista de funcionários
         self.users_frame = CTkFrame(self.main_frame)
         self.users_frame.pack(pady=10, padx=15, fill="both", expand=True)
 
-        # Carregar e exibir a lista de funcionários
         users = self.read_users_from_file(self.usuarios_file)
         for user_id, user, passw, usertype in users:
             if usertype == 'Funcionario':
@@ -310,7 +372,7 @@ class SIGnemaApp(CTk):
                 user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12), fg_color="#08253D")
                 user_label.pack(pady=5)
 
-        # Seção para gerenciar funcionários
+        # aqui gerencia os funcionários
         manage_frame = CTkFrame(self.main_frame)
         manage_frame.pack(pady=20, padx=16, fill="x")
 
@@ -336,11 +398,11 @@ class SIGnemaApp(CTk):
         updated_lines = []
         user_found = False
 
-        # Lê todas as linhas do arquivo
+        # ler as linhas do código
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
 
-        # Atualiza a linha correspondente
+        # atualizar a linha selecionada
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
                 user_id, username, pw, utype = line.strip().split(',')
@@ -360,11 +422,11 @@ class SIGnemaApp(CTk):
         updated_lines = []
         user_found = False
 
-        # Lê todas as linhas do arquivo
+        # de novo lê as linhas do código
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
 
-        # Atualiza a linha correspondente
+        # e seleciona a linha correspondente
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
                 user_id, username, pw, utype = line.strip().split(',')
@@ -373,9 +435,6 @@ class SIGnemaApp(CTk):
                     user_found = True
                 updated_line = f"{user_id},{user},{pw},{utype}\n"
                 file.write(updated_line)
-    
-        
-
 
     def read_users_from_file(self, file_path):
         users = []
@@ -384,7 +443,7 @@ class SIGnemaApp(CTk):
                 lines = file.readlines()
                 for line in lines:
                     user_data = line.strip().split(",")
-                    if len(user_data) == 4:  # Espera-se que cada linha tenha 4 partes
+                    if len(user_data) == 4:  # tem que ter 4 partes cada linha
                         users.append(user_data)
         except FileNotFoundError:
             print(f"Arquivo {file_path} não encontrado.")
