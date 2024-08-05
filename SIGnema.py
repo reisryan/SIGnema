@@ -115,7 +115,7 @@ class SIGnemaApp(ctk.CTk):
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
             for line in lines:
-                user_id, user, passw, usertype = line.strip().split(",")
+                user_id, user, passw, usertype, saldo = line.strip().split(",")
                 if username == user and password == passw:
                     self.show_message("Login realizado com sucesso", "success")
                     # Use lambda para passar os parâmetros corretamente
@@ -142,13 +142,13 @@ class SIGnemaApp(ctk.CTk):
             if account_type == 'Gerente' or account_type == 'Funcionario':
                 if sm == '123SI123':
                     with open(self.usuarios_file, 'a') as file:
-                        file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
+                        file.write(f"{user_id},{new_username},{new_password},{account_type},0.00\n")
                     self.show_message("Conta criada com sucesso", "success")
                 else:
                     self.show_message("S.M. incorreta!", "error")
             else:
                 with open(self.usuarios_file, 'a') as file:
-                    file.write(f"{user_id},{new_username},{new_password},{account_type}\n")
+                    file.write(f"{user_id},{new_username},{new_password},{account_type},0.00\n")
                 self.show_message("Conta criada com sucesso", "success")
 
             self.show_login()

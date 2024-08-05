@@ -57,12 +57,48 @@ class SIGnemaApp(CTk):
         self.change_password_button = CTkButton(self.sidebar_frame, text="Alterar Senha", command=self.change_password)
         self.change_password_button.place(x=0, y=120)
         
+        self.add_saldo_button = CTkButton(self.sidebar_frame, text="Adicionar Saldo", command=self.add_saldo)
+        self.add_saldo_button.place(x=0, y=150)
+        
         if self.usertype == "Funcionario" or self.usertype == "Gerente":
             self.funcionario_button = CTkButton(self.sidebar_frame, text="Adicionar Filme", command=self.funcionario_properties)
-            self.funcionario_button.place(x=0, y=150)
+            self.funcionario_button.place(x=0, y=180)
         if self.usertype == "Gerente":
             self.admin_users_button = CTkButton(self.sidebar_frame, text="Gerenciar Funcionários", command=self.admin_properties)
-            self.admin_users_button.place(x=0, y=180)
+            self.admin_users_button.place(x=0, y=210)
+
+    def add_saldo(self):
+        self.clear_main_frame()
+        self.add_saldo_label = CTkLabel(self.main_frame, text="Adicionar Saldo", font=("Arial", 20))
+        self.add_saldo_label.pack(pady=20)
+        self.addsaldol = CTkLabel(self.main_frame, text="Quanto de saldo adicionar:").pack(pady=10)
+        self.addsaldoentry = CTkEntry(self.main_frame)
+        self.addsaldoentry.pack(pady=10)
+        self.addsaldob = CTkButton(self.main_frame, width=4, height=8, text="Adicionar", command=self.addsaldo).pack(pady=10)
+
+    def addsaldo(self):
+        plussaldo = float(self.addsaldoentry.get())  # Convertendo a entrada para float
+        updated_lines = []
+        user_found = False
+
+        # Lendo as linhas do arquivo
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+
+        # Atualizando as linhas
+        with open(self.usuarios_file, 'w') as file:
+            for line in lines:
+                user_id, username, pw, utype, saldo = line.strip().split(',')
+                if self.user == username:
+                    saldo = float(saldo) + plussaldo  # Somando o saldo
+                    user_found = True
+                updated_line = f"{user_id},{username},{pw},{utype},{saldo:.2f}\n"  # Corrigindo a vírgula
+                file.write(updated_line)
+
+        if user_found:
+            print("Saldo atualizado com sucesso.")
+        else:
+            print("Usuário não encontrado.")
 
     def create_bottom_bar(self):
         self.movies_button = CTkButton(self.bottom_bar_frame, text="Filmes", command=self.show_movies)
@@ -264,10 +300,10 @@ class SIGnemaApp(CTk):
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
             for i in lines:
-                user_id, username, password, typeaccount = i.strip().split(',')
+                user_id, username, password, typeaccount, saldo = i.strip().split(',')
                 if username == self.user:
                     break
-        self.usrname = CTkLabel(self.main_frame, text=f"Olá, {username}! Seu id de usuário é ({user_id}) e seu tipo de conta é: {typeaccount}.", font=("Arial", 25)).pack(padx=30, pady=70)
+        self.usrname = CTkLabel(self.main_frame, text=f"Olá, {username}! Seu id de usuário é ({user_id}) e seu tipo de conta é: {typeaccount}\n e você tem {saldo} de saldo.", font=("Arial", 25)).pack(padx=30, pady=70)
 
     def change_password(self):
         self.clear_main_frame()
@@ -366,7 +402,7 @@ class SIGnemaApp(CTk):
         self.users_frame.pack(pady=10, padx=15, fill="both", expand=True)
 
         users = self.read_users_from_file(self.usuarios_file)
-        for user_id, user, passw, usertype in users:
+        for user_id, user, passw, usertype, saldo in users:
             if usertype == 'Funcionario':
                 user_info = f"ID: {user_id}, Usuário: {user}, Tipo: {usertype}"
                 user_label = CTkLabel(self.users_frame, text=user_info, font=("Arial", 12), fg_color="#08253D")
@@ -405,11 +441,11 @@ class SIGnemaApp(CTk):
         # atualizar a linha selecionada
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
-                user_id, username, pw, utype = line.strip().split(',')
+                user_id, username, pw, utype, saldo = line.strip().split(',')
                 if user_id == demitido_id:
                     utype = 'Usuario'
                     user_found = True
-                updated_line = f"{user_id},{username},{pw},{utype}\n"
+                updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"
                 file.write(updated_line)
     
     def changepassword(self):
@@ -429,11 +465,11 @@ class SIGnemaApp(CTk):
         # e seleciona a linha correspondente
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
-                user_id, username, pw, utype = line.strip().split(',')
+                user_id, username, pw, utype, saldo = line.strip().split(',')
                 if user == username:
                     pw = newpassword
                     user_found = True
-                updated_line = f"{user_id},{user},{pw},{utype}\n"
+                updated_line = f"{user_id},{user},{pw},{utype}{saldo}\n"
                 file.write(updated_line)
 
     def read_users_from_file(self, file_path):
@@ -443,7 +479,7 @@ class SIGnemaApp(CTk):
                 lines = file.readlines()
                 for line in lines:
                     user_data = line.strip().split(",")
-                    if len(user_data) == 4:  # tem que ter 4 partes cada linha
+                    if len(user_data) == 5:  # tem que ter 5 partes cada linha
                         users.append(user_data)
         except FileNotFoundError:
             print(f"Arquivo {file_path} não encontrado.")
