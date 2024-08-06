@@ -143,7 +143,9 @@ class SIGnemaApp(CTk):
             ("Letícia", "images/filme6.png", "23h00"),
         ]
 
-        movies.append(self.load_movies_from_file())
+        retorno = (self.load_movies_from_file())
+        for i in range(len(retorno)):
+            movies.append(retorno[i])
 
         poster_frame = CTkScrollableFrame(self.main_frame, width=800, height=400, orientation='horizontal')
         poster_frame.pack()
@@ -165,6 +167,7 @@ class SIGnemaApp(CTk):
             label.pack()
 
     def load_movies_from_file(self):
+        filmes = []
         with open(self.filmes_file, 'r', encoding='utf-8') as file:
             for line in file:
             # Dividir a linha pelo separador de vírgulas
@@ -173,7 +176,8 @@ class SIGnemaApp(CTk):
                 # Extrair id, título, caminho da imagem e horário
                     movie_id, title, image_path, time = parts
                 # Adicionar o filme à lista movies
-                    return (title, image_path, time)
+                filmes.append((title, image_path, time))
+        return filmes
 
     def open_movie_page(self, movie_name, time):
         self.clear_main_frame()
