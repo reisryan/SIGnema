@@ -20,6 +20,8 @@ class SIGnemaApp(CTk):
         self.title("SIGnema App")
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
         self.usuarios_file = os.path.join(self.base_directory, "data", "usuarios.txt")
+        self.filmes_file = os.path.join(self.base_directory, "data", "filmes.txt")
+
 
         # barra lateral
         self.sidebar_frame = CTkFrame(self, width=150, height=100, corner_radius=0)
@@ -92,7 +94,7 @@ class SIGnemaApp(CTk):
                 if self.user == username:
                     saldo = float(saldo) + plussaldo  # Somando o saldo
                     user_found = True
-                updated_line = f"{user_id},{username},{pw},{utype},{saldo:.2f}\n"  # Corrigindo a vírgula
+                updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"  # Corrigindo a vírgula
                 file.write(updated_line)
 
         if user_found:
@@ -140,6 +142,9 @@ class SIGnemaApp(CTk):
             ("O Exorcismo", "images/filme5.png", "20h00"),
             ("Letícia", "images/filme6.png", "23h00"),
         ]
+
+        movies.append(self.load_movies_from_file())
+
         poster_frame = CTkScrollableFrame(self.main_frame, width=800, height=400, orientation='horizontal')
         poster_frame.pack()
 
@@ -158,6 +163,17 @@ class SIGnemaApp(CTk):
             movie_info = f"{name} - \nHorário(s) Disponível(is): {time}"
             label = CTkLabel(frame, text=movie_info)
             label.pack()
+
+    def load_movies_from_file(self):
+        with open(self.filmes_file, 'r', encoding='utf-8') as file:
+            for line in file:
+            # Dividir a linha pelo separador de vírgulas
+                parts = line.strip().split(',')
+                if len(parts) == 4:
+                # Extrair id, título, caminho da imagem e horário
+                    movie_id, title, image_path, time = parts
+                # Adicionar o filme à lista movies
+                    return (title, image_path, time)
 
     def open_movie_page(self, movie_name, time):
         self.clear_main_frame()
@@ -236,17 +252,18 @@ class SIGnemaApp(CTk):
             messagebox.showinfo("Aviso", "Nenhum assento selecionado para salvar.")
             return
         
-        self.save_order(movie_name, time, selected_seats)
-        
-        # Atualizar matriz de assentos para marcar como ocupados (cinza)
-        seat_matrix = self.load_seat_matrix(movie_name, time)
-        for row in range(5):
-            for col in range(10):
-                if self.seat_buttons[row][col].cget("fg_color") == "blue":
-                    seat_matrix[row][col] = 1  # Marcar como ocupado
+        if float(self.versaldo()) >= 25*len(selected_seats):
+            self.save_order(movie_name, time, selected_seats)
+            self.attsaldo(len(selected_seats))
+            # Atualizar matriz de assentos para marcar como ocupados (cinza)
+            seat_matrix = self.load_seat_matrix(movie_name, time)
+            for row in range(5):
+                for col in range(10):
+                    if self.seat_buttons[row][col].cget("fg_color") == "blue":
+                        seat_matrix[row][col] = 1  # Marcar como ocupado
 
-        self.save_seat_matrix(movie_name, time, seat_matrix)
-        self.show_movies()
+            self.save_seat_matrix(movie_name, time, seat_matrix)
+            self.show_movies()
 
     def show_my_orders(self):
         self.clear_main_frame()
@@ -448,6 +465,28 @@ class SIGnemaApp(CTk):
                 updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"
                 file.write(updated_line)
     
+    def versaldo(self):
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                user_id, username, pw, utype, saldo = line.strip().split(',')
+                if username == self.user:
+                    return saldo
+
+    def attsaldo(self, filmes):
+        with open(self.usuarios_file, 'r') as file:
+            lines = file.readlines()
+
+        # atualizar a linha selecionada
+        with open(self.usuarios_file, 'w') as file:
+            for line in lines:
+                user_id, username, pw, utype, saldo = line.strip().split(',')
+                if float(saldo) >= int(filmes)*25:
+                    saldo = float(saldo)
+                    saldo -= int(filmes)*25
+                updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"
+                file.write(updated_line)
+
     def changepassword(self):
         newpassword = self.newpw.get()
   
