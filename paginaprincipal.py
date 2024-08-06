@@ -428,7 +428,7 @@ class SIGnemaApp(CTk):
         demitido_id = self.demitir_entry.get()
     
         if not demitido_id:
-            ctk.CTkMessagebox.show_info("Erro", "ID do funcionário não fornecido.")
+            print("ID do funcionário não fornecido.")
             return
     
         updated_lines = []
@@ -452,7 +452,7 @@ class SIGnemaApp(CTk):
         newpassword = self.newpw.get()
   
         if not newpassword:
-            ctk.CTkMessagebox.show_info("Erro", "ID do funcionário não fornecido.")
+            print("Senha não fornecida.")
             return
     
         updated_lines = []
@@ -469,7 +469,7 @@ class SIGnemaApp(CTk):
                 if user == username:
                     pw = newpassword
                     user_found = True
-                updated_line = f"{user_id},{user},{pw},{utype}{saldo}\n"
+                updated_line = f"{user_id},{user},{pw},{utype},{saldo}\n"
                 file.write(updated_line)
 
     def read_users_from_file(self, file_path):
