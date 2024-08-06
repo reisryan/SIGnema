@@ -466,6 +466,8 @@ class SIGnemaApp(CTk):
                 file.write(updated_line)
     
     def versaldo(self):
+        self.user = sys.argv[1]
+
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
             for line in lines:
@@ -476,12 +478,14 @@ class SIGnemaApp(CTk):
     def attsaldo(self, filmes):
         with open(self.usuarios_file, 'r') as file:
             lines = file.readlines()
+            self.user = sys.argv[1]
+
 
         # atualizar a linha selecionada
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
                 user_id, username, pw, utype, saldo = line.strip().split(',')
-                if float(saldo) >= int(filmes)*25:
+                if self.user == username and float(saldo) >= int(filmes)*25:
                     saldo = float(saldo)
                     saldo -= int(filmes)*25
                 updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"
@@ -489,6 +493,7 @@ class SIGnemaApp(CTk):
 
     def changepassword(self):
         newpassword = self.newpw.get()
+        self.user = sys.argv[1]
   
         if not newpassword:
             print("Senha não fornecida.")
@@ -505,10 +510,12 @@ class SIGnemaApp(CTk):
         with open(self.usuarios_file, 'w') as file:
             for line in lines:
                 user_id, username, pw, utype, saldo = line.strip().split(',')
-                if user == username:
+                if self.user == username:
                     pw = newpassword
                     user_found = True
-                updated_line = f"{user_id},{user},{pw},{utype},{saldo}\n"
+                    updated_line = f"{user_id},{self.user},{pw},{utype},{saldo}\n"
+                else:
+                    updated_line = f"{user_id},{username},{pw},{utype},{saldo}\n"
                 file.write(updated_line)
 
     def read_users_from_file(self, file_path):
