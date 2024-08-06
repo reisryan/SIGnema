@@ -1,2 +1,2 @@
-1,300,images\png-transparent-300-movie-poster-fictional-character-mousepad-300-v15-photography-poster-fictional-character-thumbnail.png,00:00
-2,Inteligencia 1,images\Design sem nome.png,08:00
+1,300,images\png-transparent-300-movie-poster-fictional-character-mousepad-300-v15-photography-poster-fictional-character-thumbnail.png,00h00
+2,Inteligencia 1,images\Design sem nome.png,08h00

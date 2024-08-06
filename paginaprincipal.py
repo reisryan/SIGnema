@@ -174,7 +174,7 @@ class SIGnemaApp(CTk):
                 parts = line.strip().split(',')
                 if len(parts) == 4:
                 # Extrair id, título, caminho da imagem e horário
-                    movie_id, title, image_path, time = parts
+                   movie_id, title, image_path, time = parts
                 # Adicionar o filme à lista movies
                 filmes.append((title, image_path, time))
         return filmes
@@ -409,7 +409,7 @@ class SIGnemaApp(CTk):
         ctk.CTkLabel(self.funcionario_frame, text="Horário:").pack(pady=5)
         self.horario_entry = ctk.CTkEntry(self.funcionario_frame)
         self.horario_entry.pack(pady=5, padx=10)
-        self.horario_entry.insert(0, "00:00")
+        self.horario_entry.insert(0, "00h00")
 
         submit_button = ctk.CTkButton(self.funcionario_frame, text="Salvar Filme", command=self.submit_movie)
         submit_button.pack(pady=20)
